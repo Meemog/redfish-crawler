@@ -46,6 +46,7 @@ async function fetchRedfish(
   path,
   timeout,
   stats,
+  verbose,
 ) {
   const url = new URL(path, hostname).toString();
 
@@ -63,7 +64,9 @@ async function fetchRedfish(
   }, timeout);
 
   try {
-    console.log("Fetching:", url);
+    if (verbose) {
+      console.log("Fetching:", url);
+    }
 
     const response = await fetch(url, {
       signal: controller.signal,
@@ -77,14 +80,18 @@ async function fetchRedfish(
       stats.httpErrors += 1;
       stats.failed += 1;
 
-      console.log("HTTP", response.status, url);
+      if (verbose) {
+        console.log("HTTP", response.status, url);
+      }
       return null;
     }
 
     const contentType = response.headers.get("content-type") || "";
 
     if (!contentType.includes("application/json")) {
-      console.log("Skipping non-json:", url);
+      if (verbose) {
+        console.log("Skipping non-json:", url);
+      }
       stats.skipped += 1;
       return null;
     }
@@ -97,10 +104,14 @@ async function fetchRedfish(
   } catch (err) {
     stats.failed += 1;
     if (err.name === "AbortError") {
-      console.log("Timeout:", url);
+      if (verbose) {
+        console.log("Timeout:", url);
+      }
       stats.timedOut += 1;
     } else {
-      console.log("Fetch error:", url, err.message);
+      if (verbose) {
+        console.log("Fetch error:", url, err.message);
+      }
     }
 
     return {
@@ -197,6 +208,7 @@ async function crawl(options, path, depth = 0, limit, stats) {
       path,
       options.timeout,
       stats,
+      options.verbose,
     ),
   );
 

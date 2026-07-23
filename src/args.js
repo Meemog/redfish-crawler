@@ -6,6 +6,7 @@ const DEFAULTS = {
   insecure: false,
   timeout: 10000,
   concurrency: 5,
+  verbose: false,
 };
 
 function printUsage() {
@@ -29,6 +30,7 @@ function printUsage() {
     "  --concurrency N     Set maximum number of concurrent requests (default 5)",
   );
   console.log("  --insecure          Disable TLS certificate verification");
+  console.log("  --verbose           Enable verbose output");
   console.log("  -h, --help          Show this help message");
 }
 
@@ -119,6 +121,9 @@ function parseArgs(argv) {
       }
       case "--insecure":
         options.insecure = true;
+        break;
+      case "--verbose":
+        options.verbose = true;
         break;
       default:
         if (arg.startsWith("--")) {

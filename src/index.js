@@ -42,6 +42,16 @@ async function main(argv) {
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
   }
 
+  console.log("Starting Redfish crawl with options:");
+  console.log(`Hostname          : ${options.hostname}`);
+  console.log(`Asset path        : ${options.assetPath}`);
+  console.log(`Output file       : ${options.outputFile}`);
+  console.log(`Max depth         : ${options.maxDepth}`);
+  console.log(`Concurrency       : ${options.concurrency}`);
+  console.log(`Timeout           : ${options.timeout} ms`);
+  console.log(`Insecure TLS      : ${options.insecure ? "Yes" : "No"}`);
+  console.log(`Verbose output    : ${options.verbose ? "Yes" : "No"}`);
+
   const { asset, stats } = await crawlRedfish(options);
 
   writeOutput(options.outputFile, asset);
