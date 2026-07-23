@@ -1,7 +1,16 @@
 const fs = require("fs");
 const { SKIP_KEYS, shouldFollow } = require("./constants");
+const { Agent } = require("undici");
 
 const visitedUrls = new Set();
+
+function createDispatcher(insecure) {
+  return new Agent({
+    connect: {
+      rejectUnauthorized: !insecure,
+    },
+  });
+}
 
 function createLimiter(limit, stats) {
   let active = 0;
@@ -47,6 +56,8 @@ async function fetchRedfish(
   timeout,
   stats,
   verbose,
+  insecure,
+  dispatch,
 ) {
   const url = new URL(path, hostname).toString();
 
@@ -74,6 +85,7 @@ async function fetchRedfish(
         Authorization: buildAuthHeader(username, password),
         Accept: "application/json",
       },
+      dispatcher: dispatch,
     });
 
     if (!response.ok) {
@@ -189,7 +201,7 @@ async function parseData(data, crawl, depth, key = "") {
   return data;
 }
 
-async function crawl(options, path, depth = 0, limit, stats) {
+async function crawl(options, path, depth = 0, limit, stats, dispatch) {
   stats.resourcesDiscovered += 1;
   stats.maxDepthReached = Math.max(stats.maxDepthReached, depth);
   if (depth > options.maxDepth) {
@@ -209,6 +221,8 @@ async function crawl(options, path, depth = 0, limit, stats) {
       options.timeout,
       stats,
       options.verbose,
+      options.insecure,
+      dispatch,
     ),
   );
 
@@ -219,7 +233,7 @@ async function crawl(options, path, depth = 0, limit, stats) {
   return parseData(
     data,
     (childPath, nextDepth = depth + 1) =>
-      crawl(options, childPath, nextDepth, limit, stats),
+      crawl(options, childPath, nextDepth, limit, stats, dispatch),
     depth,
   );
 }
@@ -242,7 +256,16 @@ async function crawlRedfish(options) {
 
   const limit = createLimiter(options.concurrency, stats);
 
-  const asset = await crawl(options, options.assetPath, 0, limit, stats);
+  const dispatch = createDispatcher(options.insecure);
+
+  const asset = await crawl(
+    options,
+    options.assetPath,
+    0,
+    limit,
+    stats,
+    dispatch,
+  );
 
   return {
     asset,

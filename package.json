@@ -13,7 +13,10 @@
     "start": "node src/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "dependencies": {},
+  "dependencies": {
+    "@inquirer/prompts": "^8.5.2",
+    "undici": "^7.28.0"
+  },
   "devDependencies": {
     "prettier": "^3.9.6"
   }

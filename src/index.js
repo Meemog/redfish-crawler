@@ -1,5 +1,6 @@
 const { parseArgs, printUsage } = require("./args");
 const { crawlRedfish, writeOutput } = require("./crawler");
+const { confirm } = require("@inquirer/prompts");
 
 function formatDuration(ms) {
   if (ms < 1000) {
@@ -38,10 +39,6 @@ async function main(argv) {
     );
   }
 
-  if (options.insecure) {
-    process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
-  }
-
   console.log("Starting Redfish crawl with options:");
   console.log(`Hostname          : ${options.hostname}`);
   console.log(`Asset path        : ${options.assetPath}`);
@@ -51,6 +48,20 @@ async function main(argv) {
   console.log(`Timeout           : ${options.timeout} ms`);
   console.log(`Insecure TLS      : ${options.insecure ? "Yes" : "No"}`);
   console.log(`Verbose output    : ${options.verbose ? "Yes" : "No"}`);
+
+  if (options.insecure) {
+    const answer = await confirm({
+      message:
+        "Warning: Insecure TLS is enabled. This may expose you to security risks. Do you want to continue?",
+    });
+
+    if (answer) {
+      console.log("Continuing...");
+    } else {
+      console.log("Aborting due to insecure TLS.");
+      process.exit(1);
+    }
+  }
 
   const { asset, stats } = await crawlRedfish(options);
 
