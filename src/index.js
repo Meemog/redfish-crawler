@@ -75,7 +75,14 @@ async function main(argv) {
     }
   }
 
-  const { asset, stats } = await crawlRedfish(options);
+  let asset, stats;
+
+  try {
+    ({ asset, stats } = await crawlRedfish(options));
+  } catch (err) {
+    console.error(`Error: ${err.message}`);
+    process.exit(1);
+  }
 
   writeOutput(options.outputFile, asset);
 

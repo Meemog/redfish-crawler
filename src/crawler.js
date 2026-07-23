@@ -4,6 +4,18 @@ const { Agent } = require("undici");
 
 const visitedUrls = new Set();
 
+function isTlsError(err) {
+  const tlsCodes = new Set([
+    "DEPTH_ZERO_SELF_SIGNED_CERT",
+    "SELF_SIGNED_CERT_IN_CHAIN",
+    "UNABLE_TO_VERIFY_LEAF_SIGNATURE",
+    "CERT_HAS_EXPIRED",
+    "ERR_TLS_CERT_ALTNAME_INVALID",
+  ]);
+
+  return tlsCodes.has(err.code) || tlsCodes.has(err.cause?.code);
+}
+
 function createDispatcher(insecure) {
   return new Agent({
     connect: {
@@ -115,6 +127,14 @@ async function fetchRedfish(
     return data;
   } catch (err) {
     stats.failed += 1;
+
+    if (isTlsError(err)) {
+      throw new Error(
+        `TLS certificate validation failed for ${url}. ` +
+          `\nTry again with the --insecure option if you trust this device.`,
+      );
+    }
+
     if (err.name === "AbortError") {
       if (verbose) {
         console.log("Timeout:", url);
