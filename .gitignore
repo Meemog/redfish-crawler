@@ -69,3 +69,4 @@ test-results/
 
 # Misc
 *.tgz
+redfish_asset.json
