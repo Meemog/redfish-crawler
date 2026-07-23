@@ -3,7 +3,7 @@ const { SKIP_KEYS, shouldFollow } = require("./constants");
 
 const visitedUrls = new Set();
 
-function createLimiter(limit) {
+function createLimiter(limit, stats) {
   let active = 0;
   const queue = [];
 
@@ -13,6 +13,8 @@ function createLimiter(limit) {
     }
 
     active += 1;
+    stats.activeRequests = active;
+    stats.maxConcurrent = Math.max(stats.maxConcurrent, active);
 
     try {
       return await fn();
@@ -37,10 +39,18 @@ function buildAuthHeader(username, password) {
   return `Basic ${Buffer.from(`${username}:${password}`).toString("base64")}`;
 }
 
-async function fetchRedfish(hostname, username, password, path, timeout) {
+async function fetchRedfish(
+  hostname,
+  username,
+  password,
+  path,
+  timeout,
+  stats,
+) {
   const url = new URL(path, hostname).toString();
 
   if (visitedUrls.has(url)) {
+    stats.skipped += 1;
     return null;
   }
 
@@ -64,6 +74,9 @@ async function fetchRedfish(hostname, username, password, path, timeout) {
     });
 
     if (!response.ok) {
+      stats.httpErrors += 1;
+      stats.failed += 1;
+
       console.log("HTTP", response.status, url);
       return null;
     }
@@ -72,13 +85,20 @@ async function fetchRedfish(hostname, username, password, path, timeout) {
 
     if (!contentType.includes("application/json")) {
       console.log("Skipping non-json:", url);
+      stats.skipped += 1;
       return null;
     }
 
-    return await response.json();
+    const data = await response.json();
+
+    stats.fetched += 1;
+
+    return data;
   } catch (err) {
+    stats.failed += 1;
     if (err.name === "AbortError") {
       console.log("Timeout:", url);
+      stats.timedOut += 1;
     } else {
       console.log("Fetch error:", url, err.message);
     }
@@ -158,7 +178,9 @@ async function parseData(data, crawl, depth, key = "") {
   return data;
 }
 
-async function crawl(options, path, depth = 0, limit) {
+async function crawl(options, path, depth = 0, limit, stats) {
+  stats.resourcesDiscovered += 1;
+  stats.maxDepthReached = Math.max(stats.maxDepthReached, depth);
   if (depth > options.maxDepth) {
     return null;
   }
@@ -174,6 +196,7 @@ async function crawl(options, path, depth = 0, limit) {
       options.password,
       path,
       options.timeout,
+      stats,
     ),
   );
 
@@ -184,7 +207,7 @@ async function crawl(options, path, depth = 0, limit) {
   return parseData(
     data,
     (childPath, nextDepth = depth + 1) =>
-      crawl(options, childPath, nextDepth, limit),
+      crawl(options, childPath, nextDepth, limit, stats),
     depth,
   );
 }
@@ -192,13 +215,30 @@ async function crawl(options, path, depth = 0, limit) {
 async function crawlRedfish(options) {
   visitedUrls.clear();
 
-  const limit = createLimiter(options.concurrency);
+  const stats = {
+    fetched: 0,
+    failed: 0,
+    timedOut: 0,
+    httpErrors: 0,
+    skipped: 0,
+    maxDepthReached: 0,
+    activeRequests: 0,
+    maxConcurrent: 0,
+    resourcesDiscovered: 0,
+    startTime: Date.now(),
+  };
 
-  const asset = await crawl(options, options.assetPath, 0, limit);
+  const limit = createLimiter(options.concurrency, stats);
+
+  const asset = await crawl(options, options.assetPath, 0, limit, stats);
 
   return {
     asset,
-    visitedCount: visitedUrls.size,
+    stats: {
+      ...stats,
+      visitedCount: visitedUrls.size,
+      duration: Date.now() - stats.startTime,
+    },
   };
 }
 

@@ -1,6 +1,21 @@
 const { parseArgs, printUsage } = require("./args");
 const { crawlRedfish, writeOutput } = require("./crawler");
 
+function formatDuration(ms) {
+  if (ms < 1000) {
+    return `${ms} ms`;
+  }
+
+  if (ms < 60000) {
+    return `${(ms / 1000).toFixed(1)} s`;
+  }
+
+  const minutes = Math.floor(ms / 60000);
+  const seconds = ((ms % 60000) / 1000).toFixed(1);
+
+  return `${minutes} min ${seconds} s`;
+}
+
 async function main(argv) {
   const options = parseArgs(argv);
 
@@ -27,11 +42,19 @@ async function main(argv) {
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
   }
 
-  const { asset, visitedCount } = await crawlRedfish(options);
+  const { asset, stats } = await crawlRedfish(options);
+
   writeOutput(options.outputFile, asset);
 
-  console.log(`Saved ${options.outputFile}`);
-  console.log(`Resources crawled: ${visitedCount}`);
+  console.log("\nCrawl summary");
+  console.log("-------------");
+  console.log(`Output file       : ${options.outputFile}`);
+  console.log(`Resources visited : ${stats.visitedCount}`);
+  console.log(`Successful fetches: ${stats.fetched}`);
+  console.log(`Failed fetches    : ${stats.failed}`);
+  console.log(`Skipped           : ${stats.skipped}`);
+  console.log(`Max concurrency   : ${stats.maxConcurrent}`);
+  console.log(`Duration          : ${formatDuration(stats.duration)}`);
 }
 
 if (require.main === module) {
