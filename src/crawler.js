@@ -11,7 +11,7 @@ function buildAuthHeader(username, password) {
   return `Basic ${Buffer.from(`${username}:${password}`).toString("base64")}`;
 }
 
-async function fetchRedfish(hostname, username, password, path) {
+async function fetchRedfish(hostname, username, password, path, timeout) {
   const url = new URL(path, hostname).toString();
 
   if (visitedUrls.has(url)) {
@@ -19,27 +19,51 @@ async function fetchRedfish(hostname, username, password, path) {
   }
 
   visitedUrls.add(url);
-  console.log("Fetching:", url);
 
-  const response = await fetch(url, {
-    headers: {
-      Authorization: buildAuthHeader(username, password),
-      Accept: "application/json",
-    },
-  });
+  const controller = new AbortController();
 
-  if (!response.ok) {
-    console.log("HTTP", response.status, url);
-    return null;
+  const timer = setTimeout(() => {
+    controller.abort();
+  }, timeout);
+
+  try {
+    console.log("Fetching:", url);
+
+    const response = await fetch(url, {
+      signal: controller.signal,
+      headers: {
+        Authorization: buildAuthHeader(username, password),
+        Accept: "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      console.log("HTTP", response.status, url);
+      return null;
+    }
+
+    const contentType = response.headers.get("content-type") || "";
+
+    if (!contentType.includes("application/json")) {
+      console.log("Skipping non-json:", url);
+      return null;
+    }
+
+    return await response.json();
+  } catch (err) {
+    if (err.name === "AbortError") {
+      console.log("Timeout:", url);
+    } else {
+      console.log("Fetch error:", url, err.message);
+    }
+
+    return {
+      "@odata.id": path,
+      _error: "timeout",
+    };
+  } finally {
+    clearTimeout(timer);
   }
-
-  const contentType = response.headers.get("content-type") || "";
-  if (!contentType.includes("application/json")) {
-    console.log("Skipping non-json:", url);
-    return null;
-  }
-
-  return response.json();
 }
 
 function getType(value, key = "") {
@@ -126,6 +150,7 @@ async function crawl(options, path, depth = 0) {
     options.username,
     options.password,
     path,
+    options.timeout,
   );
   if (!data) {
     return null;

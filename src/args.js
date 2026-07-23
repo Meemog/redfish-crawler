@@ -4,6 +4,7 @@ const DEFAULTS = {
   maxDepth: 5,
   outputFile: "redfish_asset.json",
   insecure: false,
+  timeout: 10000,
 };
 
 function printUsage() {
@@ -20,6 +21,9 @@ function printUsage() {
     "  --output FILE       Write asset JSON to FILE (default redfish_asset.json)",
   );
   console.log("  --depth N           Set maximum crawl depth (default 5)");
+  console.log(
+    "  --timeout N         Set request timeout in ms (default 10000)",
+  );
   console.log("  --insecure          Disable TLS certificate verification");
   console.log("  -h, --help          Show this help message");
 }
@@ -91,6 +95,14 @@ function parseArgs(argv) {
           throw new Error(`Invalid depth value: ${argv[i]}`);
         }
         options.maxDepth = value;
+        break;
+      }
+      case "--timeout": {
+        const value = parseInt(argv[++i], 10);
+        if (Number.isNaN(value) || value < 0) {
+          throw new Error(`Invalid timeout value: ${argv[i]}`);
+        }
+        options.timeout = value;
         break;
       }
       case "--insecure":
