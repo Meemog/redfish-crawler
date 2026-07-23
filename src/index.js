@@ -1,6 +1,15 @@
+require("dotenv").config();
+
 const { parseArgs, printUsage } = require("./args");
 const { crawlRedfish, writeOutput } = require("./crawler");
-const { confirm } = require("@inquirer/prompts");
+const { confirm, password } = require("@inquirer/prompts");
+
+async function passwordPrompt() {
+  return await password({
+    message: "Redfish password:",
+    mask: "*",
+  });
+}
 
 function formatDuration(ms) {
   if (ms < 1000) {
@@ -32,11 +41,14 @@ async function main(argv) {
     );
   }
 
-  if (!options.username || !options.password) {
-    printUsage();
+  if (!options.username) {
     throw new Error(
-      "Missing username/password. Pass --username and --password.",
+      "Missing username. Pass --username or set REDFISH_USERNAME in .env.",
     );
+  }
+
+  if (!options.password) {
+    options.password = await passwordPrompt();
   }
 
   console.log("Starting Redfish crawl with options:");

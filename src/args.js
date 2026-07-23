@@ -1,12 +1,14 @@
 const DEFAULTS = {
-  hostname: undefined,
-  assetPath: undefined,
-  maxDepth: 5,
-  outputFile: "redfish_asset.json",
-  insecure: false,
-  timeout: 10000,
-  concurrency: 5,
-  verbose: false,
+  hostname: process.env.REDFISH_HOSTNAME,
+  username: process.env.REDFISH_USERNAME,
+  password: process.env.REDFISH_PASSWORD,
+  assetPath: process.env.REDFISH_ASSET_PATH,
+  maxDepth: Number(process.env.REDFISH_DEPTH ?? 5),
+  outputFile: process.env.REDFISH_OUTPUT ?? "redfish_asset.json",
+  insecure: process.env.REDFISH_INSECURE === "true",
+  timeout: Number(process.env.REDFISH_TIMEOUT ?? 10000),
+  concurrency: Number(process.env.REDFISH_CONCURRENCY ?? 5),
+  verbose: process.env.REDFISH_VERBOSE === "true",
 };
 
 function printUsage() {
@@ -17,7 +19,6 @@ function printUsage() {
   console.log("Options:");
   console.log("  --hostname URL      Override the default hostname");
   console.log("  --username USER     Set the username to use for Basic auth");
-  console.log("  --password PASS     Set the password to use for Basic auth");
   console.log("  --asset-path PATH   Override the default Redfish asset path");
   console.log(
     "  --output FILE       Write asset JSON to FILE (default redfish_asset.json)",
@@ -85,9 +86,6 @@ function parseArgs(argv) {
         break;
       case "--username":
         options.username = argv[++i];
-        break;
-      case "--password":
-        options.password = argv[++i];
         break;
       case "--output":
         options.outputFile = argv[++i];
