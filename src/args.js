@@ -52,18 +52,74 @@ function normalizePath(path) {
 }
 
 function validateOptions(options) {
+  const errors = [];
+
   if (!options.hostname) {
-    throw new Error("Missing required option: --hostname");
+    errors.push(
+      "Missing hostname. Provide --hostname URL or set REDFISH_HOSTNAME in .env. (e.g., https://example.bmc)",
+    );
+  } else {
+    try {
+      new URL(options.hostname);
+    } catch {
+      errors.push(`Invalid hostname URL: ${options.hostname}`);
+    }
   }
 
   if (!options.assetPath) {
-    throw new Error("Missing required option: --asset-path");
+    errors.push(
+      "Missing asset path. Provide --asset-path PATH or set REDFISH_ASSET_PATH in .env. (e.g., /redfish/v1/Systems/1)",
+    );
   }
 
-  try {
-    new URL(options.hostname);
-  } catch {
-    throw new Error(`Invalid hostname URL: ${options.hostname}`);
+  if (!options.username) {
+    errors.push(
+      "Missing username. Provide --username USER or set REDFISH_USERNAME in .env.",
+    );
+  }
+
+  if (!options.outputFile) {
+    errors.push(
+      "Missing output file. Provide --output FILE or set REDFISH_OUTPUT in .env.",
+    );
+  }
+
+  if (!Number.isInteger(options.maxDepth) || options.maxDepth < 0) {
+    errors.push(
+      `Invalid depth value: ${options.maxDepth}. Must be a non-negative integer.`,
+    );
+  }
+
+  if (!Number.isInteger(options.timeout) || options.timeout < 0) {
+    errors.push(
+      `Invalid timeout value: ${options.timeout}. Must be a non-negative integer.`,
+    );
+  }
+
+  if (!Number.isInteger(options.concurrency) || options.concurrency < 1) {
+    errors.push(
+      `Invalid concurrency value: ${options.concurrency}. Must be a positive integer.`,
+    );
+  }
+
+  if (typeof options.insecure !== "boolean") {
+    errors.push("Invalid insecure option. Must be true or false.");
+  }
+
+  if (typeof options.verbose !== "boolean") {
+    errors.push("Invalid verbose option. Must be true or false.");
+  }
+
+  if (errors.length > 0) {
+    throw new Error(
+      [
+        "Invalid configuration:",
+        "",
+        ...errors.map((error) => `  - ${error}`),
+        "",
+        "Use --help for usage information.",
+      ].join("\n"),
+    );
   }
 
   return options;

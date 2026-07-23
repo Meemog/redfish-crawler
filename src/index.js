@@ -6,7 +6,7 @@ const { confirm, password } = require("@inquirer/prompts");
 
 async function passwordPrompt() {
   return await password({
-    message: "Redfish password:",
+    message: "Redfish password (Skip by setting REDFISH_PASSWORD in .env):",
     mask: "*",
   });
 }
