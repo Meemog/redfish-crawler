@@ -12,7 +12,7 @@ function buildAuthHeader(username, password) {
 }
 
 async function fetchRedfish(hostname, username, password, path) {
-  const url = `${hostname}${path}`;
+  const url = new URL(path, hostname).toString();
 
   if (visitedUrls.has(url)) {
     return null;
