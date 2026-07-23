@@ -5,6 +5,7 @@ const DEFAULTS = {
   outputFile: "redfish_asset.json",
   insecure: false,
   timeout: 10000,
+  concurrency: 5,
 };
 
 function printUsage() {
@@ -23,6 +24,9 @@ function printUsage() {
   console.log("  --depth N           Set maximum crawl depth (default 5)");
   console.log(
     "  --timeout N         Set request timeout in ms (default 10000)",
+  );
+  console.log(
+    "  --concurrency N     Set maximum number of concurrent requests (default 5)",
   );
   console.log("  --insecure          Disable TLS certificate verification");
   console.log("  -h, --help          Show this help message");
@@ -89,6 +93,14 @@ function parseArgs(argv) {
       case "--asset-path":
         options.assetPath = normalizePath(argv[++i]);
         break;
+      case "--concurrency": {
+        const value = parseInt(argv[++i], 10);
+        if (Number.isNaN(value) || value < 1) {
+          throw new Error(`Invalid concurrency value: ${argv[i]}`);
+        }
+        options.concurrency = value;
+        break;
+      }
       case "--depth": {
         const value = parseInt(argv[++i], 10);
         if (Number.isNaN(value) || value < 0) {

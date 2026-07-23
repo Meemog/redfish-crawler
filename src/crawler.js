@@ -3,6 +3,32 @@ const { SKIP_KEYS, shouldFollow } = require("./constants");
 
 const visitedUrls = new Set();
 
+function createLimiter(limit) {
+  let active = 0;
+  const queue = [];
+
+  async function run(fn) {
+    if (active >= limit) {
+      await new Promise((resolve) => queue.push(resolve));
+    }
+
+    active += 1;
+
+    try {
+      return await fn();
+    } finally {
+      active -= 1;
+
+      const next = queue.shift();
+      if (next) {
+        next();
+      }
+    }
+  }
+
+  return run;
+}
+
 function buildAuthHeader(username, password) {
   if (!username || !password) {
     return null;
@@ -101,11 +127,7 @@ async function parseData(data, crawl, depth, key = "") {
   }
 
   if (type === "array") {
-    const result = [];
-    for (const item of data) {
-      result.push(await parseData(item, crawl, depth, ""));
-    }
-    return result;
+    return Promise.all(data.map((item) => parseData(item, crawl, depth, "")));
   }
 
   if (type === "object") {
@@ -136,7 +158,7 @@ async function parseData(data, crawl, depth, key = "") {
   return data;
 }
 
-async function crawl(options, path, depth = 0) {
+async function crawl(options, path, depth = 0, limit) {
   if (depth > options.maxDepth) {
     return null;
   }
@@ -145,28 +167,35 @@ async function crawl(options, path, depth = 0) {
     return null;
   }
 
-  const data = await fetchRedfish(
-    options.hostname,
-    options.username,
-    options.password,
-    path,
-    options.timeout,
+  const data = await limit(() =>
+    fetchRedfish(
+      options.hostname,
+      options.username,
+      options.password,
+      path,
+      options.timeout,
+    ),
   );
+
   if (!data) {
     return null;
   }
 
   return parseData(
     data,
-    (childPath, nextDepth = depth + 1) => crawl(options, childPath, nextDepth),
+    (childPath, nextDepth = depth + 1) =>
+      crawl(options, childPath, nextDepth, limit),
     depth,
-    "",
   );
 }
 
 async function crawlRedfish(options) {
   visitedUrls.clear();
-  const asset = await crawl(options, options.assetPath, 0);
+
+  const limit = createLimiter(options.concurrency);
+
+  const asset = await crawl(options, options.assetPath, 0, limit);
+
   return {
     asset,
     visitedCount: visitedUrls.size,
