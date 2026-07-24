@@ -145,7 +145,7 @@ async function submitCommand(argv) {
   });
 
   if (confirmation) {
-    console.log("Submitting");
+    submit(args.api, args.file, data);
   }
 }
 

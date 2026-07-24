@@ -129,10 +129,11 @@ async function fetchRedfish(
     stats.failed += 1;
 
     if (isTlsError(err)) {
-      throw new Error(
+      console.log(
         `TLS certificate validation failed for ${url}. ` +
           `\nTry again with the --insecure option if you trust this device.`,
       );
+      process.exit(1);
     }
 
     if (err.name === "AbortError") {

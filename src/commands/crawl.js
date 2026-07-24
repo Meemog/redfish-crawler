@@ -27,24 +27,6 @@ function formatDuration(ms) {
 async function crawl(argv) {
   const options = parseArgs(argv);
 
-  if (!options.hostname) {
-    printUsage();
-    throw new Error("Missing hostname. Pass --hostname URL.");
-  }
-
-  if (!options.assetPath) {
-    printUsage();
-    throw new Error(
-      "Missing asset path. Pass --asset-path PATH or provide assetPath as a positional argument.",
-    );
-  }
-
-  if (!options.username) {
-    throw new Error(
-      "Missing username. Pass --username or set REDFISH_USERNAME in .env.",
-    );
-  }
-
   if (!options.password) {
     options.password = await passwordPrompt();
   }

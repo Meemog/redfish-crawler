@@ -72,7 +72,7 @@ function validateOptions(options) {
   }
 
   if (errors.length > 0) {
-    throw new Error(
+    console.log(
       [
         "Invalid configuration:",
         "",
@@ -81,6 +81,7 @@ function validateOptions(options) {
         "Use --help for usage information.",
       ].join("\n"),
     );
+    process.exit(1);
   }
 
   return options;
@@ -137,27 +138,15 @@ function parseArgs(argv) {
         options.assetPath = normalizePath(argv[++i]);
         break;
       case "--concurrency": {
-        const value = parseInt(argv[++i], 10);
-        if (Number.isNaN(value) || value < 1) {
-          throw new Error(`Invalid concurrency value: ${argv[i]}`);
-        }
-        options.concurrency = value;
+        options.concurrency = parseInt(argv[++i], 10);
         break;
       }
       case "--depth": {
-        const value = parseInt(argv[++i], 10);
-        if (Number.isNaN(value) || value < 0) {
-          throw new Error(`Invalid depth value: ${argv[i]}`);
-        }
-        options.maxDepth = value;
+        options.maxDepth = parseInt(argv[++i], 10);
         break;
       }
       case "--timeout": {
-        const value = parseInt(argv[++i], 10);
-        if (Number.isNaN(value) || value < 0) {
-          throw new Error(`Invalid timeout value: ${argv[i]}`);
-        }
-        options.timeout = value;
+        options.timeout = parseInt(argv[++i], 10);
         break;
       }
       case "--insecure":
@@ -168,14 +157,16 @@ function parseArgs(argv) {
         break;
       default:
         if (arg.startsWith("--")) {
-          throw new Error(`Unknown option: ${arg}`);
+          console.log(`Unknown option: ${arg}`);
+          process.exit(1);
         }
 
         if (!sawPath) {
           options.assetPath = normalizePath(arg);
           sawPath = true;
         } else {
-          throw new Error(`Unexpected argument: ${arg}`);
+          console.log(`Unexpected argument: ${arg}`);
+          process.exit(1);
         }
     }
   }

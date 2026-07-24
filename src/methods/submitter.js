@@ -104,10 +104,62 @@ async function extractData(filePath) {
   return result;
 }
 
-async function submit(url, path) {
-  console.log("Trying to fetch data from:", path);
-  const data = await extractData(path);
-  console.table(data);
+function cleanOptions(options) {
+  options.rack = options.rack.id;
+  options.manufacturer = options.manufacturer.id;
+}
+
+async function submit(hostname, jsonFile, body) {
+  const url = new URL("/api/assets", hostname).toString();
+  cleanOptions(body);
+
+  const rawJson = await fs.readFile(jsonFile, "utf8");
+
+  const requestBody = {
+    ...body,
+    rawJson,
+  };
+
+  console.log(`Submitting ${jsonFile} to URL:${url}, with body:`);
+  const str = rawJson;
+  console.log({
+    ...body,
+    rawJson:
+      str.length > 100
+        ? str.slice(0, 100).replace(/\r?\n/g, "") + "..."
+        : str.replace(/\r?\n/g, ""),
+  });
+
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(requestBody),
+  });
+
+  if (!response.ok) {
+    if (response.status === 409) {
+      console.log(`Asset with UUID: '${body.uuid}' already exists`);
+      process.exit(1);
+    }
+    throw new Error(
+      `Submission failed: ${response.status} ${response.statusText}`,
+    );
+  }
+
+  const backendUrl = new URL(
+    `/api/assets?id=${body.uuid}`,
+    hostname,
+  ).toString();
+
+  const frontendUrl = new URL(`/assets?id=${body.uuid}`, hostname).toString();
+
+  console.log("Successful");
+  console.log(`Asset URL: ${backendUrl}`);
+  console.log(`View Asset: ${frontendUrl}`);
+
+  return await response.json();
 }
 
 module.exports = {

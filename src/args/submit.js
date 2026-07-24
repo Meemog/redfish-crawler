@@ -32,7 +32,7 @@ function validateOptions(options) {
   }
 
   if (errors.length > 0) {
-    throw new Error(
+    console.log(
       [
         "Invalid configuration:",
         "",
@@ -41,6 +41,7 @@ function validateOptions(options) {
         "Use --help for usage information.",
       ].join("\n"),
     );
+    process.exit(1);
   }
 
   return options;
@@ -48,7 +49,7 @@ function validateOptions(options) {
 
 function parseArgs(argv) {
   if (argv.length === 0) {
-    throw new Error(
+    console.log(
       "Missing arguments. Usage: redfish-crawler submit <FILE> [--api API_PATH]",
     );
   }
@@ -78,14 +79,16 @@ function parseArgs(argv) {
 
       default:
         if (arg.startsWith("--")) {
-          throw new Error(`Unknown option: ${arg}`);
+          console.log(`Unknown option: ${arg}`);
+          process.exit(1);
         }
     }
 
     if (!options.file) {
       options.file = arg;
     } else {
-      throw new Error(`Unexpected argument: ${arg}`);
+      console.log(`Unexpected argument: ${arg}`);
+      process.exit(1);
     }
   }
 
