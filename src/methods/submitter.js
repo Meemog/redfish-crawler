@@ -113,6 +113,13 @@ async function submit(hostname, jsonFile, body) {
   const url = new URL("/api/assets", hostname).toString();
   cleanOptions(body);
 
+  body.dataFields = [
+    {
+      title: "File name",
+      value: jsonFile,
+    },
+  ];
+
   const rawJson = await fs.readFile(jsonFile, "utf8");
 
   const requestBody = {
