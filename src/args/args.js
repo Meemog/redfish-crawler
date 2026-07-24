@@ -65,8 +65,14 @@ function printUsage() {
   );
   console.log("  --insecure          Disable TLS certificate verification");
   console.log("  --verbose           Enable verbose output");
-  console.log("\n");
-  console.log("  -h, --help          Show this help message");
+  console.log("  -h, --help          Show the Crawl help message");
+  console.log("Submit Options:");
+  console.log(
+    "  --api API                 Set the API endpoint (or set REDFISH_API_PATH in .env)",
+  );
+  console.log("  --u-position POSITION     Set U position");
+  console.log("  --notes NOTES             Add submission notes");
+  console.log("  -h, --help                Show the Submit help message");
 }
 
 module.exports = {

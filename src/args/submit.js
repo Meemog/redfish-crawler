@@ -3,6 +3,8 @@ const { normalizeHostname } = require("./args");
 const DEFAULTS = {
   api: process.env.REDFISH_API_PATH,
   file: null,
+  uPosition: 0,
+  notes: null,
 };
 
 function validateOptions(options) {
@@ -16,6 +18,17 @@ function validateOptions(options) {
     errors.push(
       "Missing API path. Provide --api API_PATH or set REDFISH_API_PATH in .env",
     );
+  }
+
+  if (options.uPosition !== undefined) {
+    const uPositionNum = Number(options.uPosition);
+    if (isNaN(uPositionNum)) {
+      errors.push(
+        `Invalid U position: ${options.uPosition}. Must be a number.`,
+      );
+    } else {
+      options.uPosition = uPositionNum;
+    }
   }
 
   if (errors.length > 0) {
@@ -36,7 +49,7 @@ function validateOptions(options) {
 function parseArgs(argv) {
   if (argv.length === 0) {
     throw new Error(
-      "Missing arguments. Usage: redfish-crawler submit <FILE> [--api API_PATH] or set REDFISH_API_PATH in .env",
+      "Missing arguments. Usage: redfish-crawler submit <FILE> [--api API_PATH]",
     );
   }
 
@@ -50,12 +63,19 @@ function parseArgs(argv) {
       case "--help":
         printUsage();
         process.exit(0);
+
       case "--api":
         options.api = normalizeHostname(argv[++i]);
-        if (!options.api) {
-          throw new Error("Missing value for --api option.");
-        }
         continue;
+
+      case "--u-position":
+        options.uPosition = argv[++i];
+        continue;
+
+      case "--notes":
+        options.notes = argv[++i];
+        continue;
+
       default:
         if (arg.startsWith("--")) {
           throw new Error(`Unknown option: ${arg}`);
@@ -73,13 +93,17 @@ function parseArgs(argv) {
 }
 
 function printUsage() {
-  console.log("Usage: redfish-crawler submit <FILE> [--api API]");
+  console.log(
+    "Usage: redfish-crawler submit <FILE> [--api API] [--u-position POSITION] [--notes NOTES]",
+  );
   console.log("");
   console.log("Options:");
   console.log(
-    "  --api API           Set the API endpoint (or set REDFISH_API_PATH in .env)",
+    "  --api API                 Set the API endpoint (or set REDFISH_API_PATH in .env)",
   );
-  console.log("  -h, --help          Show this help message");
+  console.log("  --u-position POSITION     Set U position");
+  console.log("  --notes NOTES             Add submission notes");
+  console.log("  -h, --help                Show this help message");
 }
 
 module.exports = {

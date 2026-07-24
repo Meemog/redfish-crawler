@@ -1,5 +1,61 @@
 const fs = require("fs/promises");
 
+async function getRacks(hostname) {
+  const url = new URL("/api/racks", hostname).toString();
+
+  const response = await fetch(url, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(
+      `Failed to fetch racks from ${url}: ${response.statusText}`,
+    );
+  }
+
+  const data = await response.json();
+
+  racks = data.body.map((rack) => {
+    return {
+      id: rack._id,
+      name: rack.name,
+    };
+  });
+
+  return racks;
+}
+
+async function getManufacturers(hostname) {
+  const url = new URL("/api/enums/manufacturers", hostname).toString();
+
+  const response = await fetch(url, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(
+      `Failed to fetch manufacturers from ${url}: ${response.statusText}`,
+    );
+  }
+
+  const data = await response.json();
+
+  const manufacturers = data.body.map((manufacturer) => {
+    return {
+      id: manufacturer.value,
+      name: manufacturer.name,
+    };
+  });
+
+  return manufacturers;
+}
+
 function getByPath(obj, path) {
   return path.split(".").reduce((current, key) => {
     if (current == null) return undefined;
@@ -56,4 +112,7 @@ async function submit(url, path) {
 
 module.exports = {
   submit,
+  extractData,
+  getRacks,
+  getManufacturers,
 };
