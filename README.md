@@ -2,6 +2,10 @@
 
 Redfish Crawler is a CLI tool for crawling Redfish asset paths and exporting discovered asset data as JSON.
 
+There are two parts to this tool. The crawler will look over the data retrieved from a redfish API request and expand any URLs it finds up to a certain depth, and output a large dump of json data.
+
+The submitter will take that data and submit it to the redfish parser API where the data can be visualised on a web frontend and the paths of data points of interest can be stored.
+
 ## Installation
 
 Install dependencies locally:
