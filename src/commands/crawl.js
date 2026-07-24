@@ -59,7 +59,7 @@ async function crawl(argv, commandName) {
   const spinner = options.verbose ? null : ora("Crawling").start();
 
   try {
-    ({ asset, stats } = await crawlRedfish(options));
+    ({ asset, stats } = await crawlRedfish(options, spinner));
 
     spinner?.succeed("Complete!");
   } catch (err) {

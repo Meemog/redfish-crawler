@@ -74,6 +74,7 @@ async function fetchRedfish(
   verbose,
   insecure,
   dispatch,
+  spinner,
 ) {
   const url = new URL(path, hostname).toString();
 
@@ -106,8 +107,12 @@ async function fetchRedfish(
 
     if (!response.ok) {
       if (stats.failed == 0) {
+        if (spinner) {
+          spinner.fail("Entrypoint URL fetch failed");
+        } else {
+          console.log("Entrypoint URL fetch failed, exiting...");
+        }
         console.log("HTTP", response.status, url);
-        console.log("Entrypoint URL fetch failed, exiting...");
         process.exit(1);
       }
       stats.httpErrors += 1;
@@ -138,6 +143,7 @@ async function fetchRedfish(
     stats.failed += 1;
 
     if (isTlsError(err)) {
+      spinner?.fail("TLS error");
       console.log(
         `TLS certificate validation failed for ${url}. ` +
           `\nTry again with the --insecure option if you trust this device.`,
@@ -231,7 +237,15 @@ async function parseData(data, crawl, depth, key = "") {
   return data;
 }
 
-async function crawl(options, path, depth = 0, limit, stats, dispatch) {
+async function crawl(
+  options,
+  path,
+  depth = 0,
+  limit,
+  stats,
+  dispatch,
+  spinner,
+) {
   if (depth > options.maxDepth) {
     return null;
   }
@@ -254,6 +268,7 @@ async function crawl(options, path, depth = 0, limit, stats, dispatch) {
       options.verbose,
       options.insecure,
       dispatch,
+      spinner,
     ),
   );
 
@@ -269,7 +284,7 @@ async function crawl(options, path, depth = 0, limit, stats, dispatch) {
   );
 }
 
-async function crawlRedfish(options) {
+async function crawlRedfish(options, spinner) {
   visitedUrls.clear();
 
   const stats = {
@@ -296,6 +311,7 @@ async function crawlRedfish(options) {
     limit,
     stats,
     dispatch,
+    spinner,
   );
 
   return {
