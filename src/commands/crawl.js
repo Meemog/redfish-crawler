@@ -24,8 +24,8 @@ function formatDuration(ms) {
   return `${minutes} min ${seconds} s`;
 }
 
-async function crawl(argv) {
-  const options = parseArgs(argv);
+async function crawl(argv, commandName) {
+  const options = parseArgs(argv, commandName);
 
   if (!options.password) {
     options.password = await passwordPrompt();

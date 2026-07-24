@@ -47,7 +47,7 @@ function validateOptions(options) {
   return options;
 }
 
-function parseArgs(argv) {
+function parseArgs(argv, commandName) {
   if (argv.length === 0) {
     console.log(
       "Missing arguments. Usage: redfish-crawler submit <FILE> [--api API_PATH]",
@@ -62,7 +62,7 @@ function parseArgs(argv) {
     switch (arg) {
       case "-h":
       case "--help":
-        printUsage();
+        printUsage(commandName);
         process.exit(0);
 
       case "--api":
@@ -95,10 +95,8 @@ function parseArgs(argv) {
   return validateOptions(options);
 }
 
-function printUsage() {
-  console.log(
-    "Usage: redfish-crawler submit <FILE> [--api API] [--u-position POSITION] [--notes NOTES]",
-  );
+function printUsage(commandName) {
+  console.log(`Usage: ${commandName} submit <FILE> [--api API] [options]`);
   console.log("");
   console.log("Options:");
   console.log(

@@ -36,8 +36,8 @@ function normalizePath(path) {
   return `/${path.replace(/^\/+/, "")}`;
 }
 
-function printUsage() {
-  console.log("Usage: redfish-crawler <command> [options]");
+function printUsage(commandName) {
+  console.log(`Usage: ${commandName} <command> [options]`);
   console.log("");
   console.log("Commands:");
   console.log("  crawl               Crawl Redfish endpoint (default)");
@@ -45,6 +45,7 @@ function printUsage() {
     "  submit <FILE> [--api API] Submit crawled data to API endpoint (or set REDFISH_API_PATH in .env)",
   );
   console.log("");
+
   console.log("Crawl Options:");
   console.log(
     "  --hostname URL      Set the Redfish hostname (e.g., https://example.bmc)",
@@ -66,13 +67,14 @@ function printUsage() {
   console.log("  --insecure          Disable TLS certificate verification");
   console.log("  --verbose           Enable verbose output");
   console.log("  -h, --help          Show the Crawl help message");
+
   console.log("Submit Options:");
   console.log(
-    "  --api API                 Set the API endpoint (or set REDFISH_API_PATH in .env)",
+    "  --api API           Set the API endpoint (or set REDFISH_API_PATH in .env)",
   );
-  console.log("  --u-position POSITION     Set U position");
-  console.log("  --notes NOTES             Add submission notes");
-  console.log("  -h, --help                Show the Submit help message");
+  console.log("  --u-position POSITION Set U position");
+  console.log("  --notes NOTES       Add submission notes");
+  console.log("  -h, --help          Show the Submit help message");
 }
 
 module.exports = {

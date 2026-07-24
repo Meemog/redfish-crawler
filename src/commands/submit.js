@@ -112,8 +112,8 @@ async function getOtherFields(data, { racks, manufacturers }) {
   return data;
 }
 
-async function submitCommand(argv) {
-  const args = parseArgs(argv);
+async function submitCommand(argv, commandName) {
+  const args = parseArgs(argv, commandName);
 
   const racks = await getRacks(args.api);
   const manufacturers = await getManufacturers(args.api);

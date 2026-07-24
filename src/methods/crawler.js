@@ -101,6 +101,11 @@ async function fetchRedfish(
     });
 
     if (!response.ok) {
+      if (stats.failed == 0) {
+        console.log("HTTP", response.status, url);
+        console.log("Entrypoint URL fetch failed, exiting...");
+        process.exit(1);
+      }
       stats.httpErrors += 1;
       stats.failed += 1;
 

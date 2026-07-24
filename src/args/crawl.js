@@ -87,8 +87,8 @@ function validateOptions(options) {
   return options;
 }
 
-function printUsage() {
-  console.log("Usage: redfish-crawler crawl [options]");
+function printUsage(commandName) {
+  console.log(`Usage: ${commandName} crawl [options]`);
   console.log("");
   console.log("Options:");
   console.log(
@@ -113,7 +113,7 @@ function printUsage() {
   console.log("  -h, --help          Show this help message");
 }
 
-function parseArgs(argv) {
+function parseArgs(argv, commandName) {
   const options = { ...DEFAULTS };
   let sawPath = false;
 
@@ -123,7 +123,7 @@ function parseArgs(argv) {
     switch (arg) {
       case "-h":
       case "--help":
-        printUsage();
+        printUsage(commandName);
         process.exit(0);
       case "--hostname":
         options.hostname = normalizeHostname(argv[++i]);
