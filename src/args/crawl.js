@@ -1,3 +1,4 @@
+const { normalizeHostname, normalizePath } = require("./args");
 const DEFAULTS = {
   hostname: process.env.REDFISH_HOSTNAME,
   username: process.env.REDFISH_USERNAME,
@@ -10,46 +11,6 @@ const DEFAULTS = {
   concurrency: Number(process.env.REDFISH_CONCURRENCY ?? 5),
   verbose: process.env.REDFISH_VERBOSE === "true",
 };
-
-function printUsage() {
-  console.log(
-    "Usage: redfish-crawler --hostname URL --asset-path PATH [options]",
-  );
-  console.log("");
-  console.log("Options:");
-  console.log("  --hostname URL      Override the default hostname");
-  console.log("  --username USER     Set the username to use for Basic auth");
-  console.log("  --asset-path PATH   Override the default Redfish asset path");
-  console.log(
-    "  --output FILE       Write asset JSON to FILE (default redfish_asset.json)",
-  );
-  console.log("  --depth N           Set maximum crawl depth (default 5)");
-  console.log(
-    "  --timeout N         Set request timeout in ms (default 10000)",
-  );
-  console.log(
-    "  --concurrency N     Set maximum number of concurrent requests (default 5)",
-  );
-  console.log("  --insecure          Disable TLS certificate verification");
-  console.log("  --verbose           Enable verbose output");
-  console.log("  -h, --help          Show this help message");
-}
-
-function normalizeHostname(hostname) {
-  if (!hostname) {
-    return hostname;
-  }
-
-  return hostname.replace(/\/+$/, "");
-}
-
-function normalizePath(path) {
-  if (!path) {
-    return path;
-  }
-
-  return `/${path.replace(/^\/+/, "")}`;
-}
 
 function validateOptions(options) {
   const errors = [];
@@ -125,6 +86,32 @@ function validateOptions(options) {
   return options;
 }
 
+function printUsage() {
+  console.log("Usage: redfish-crawler crawl [options]");
+  console.log("");
+  console.log("Options:");
+  console.log(
+    "  --hostname URL      Set the Redfish hostname (e.g., https://example.bmc)",
+  );
+  console.log(
+    "  --asset-path PATH   Set the Redfish asset path (e.g., /redfish/v1/Systems/1)",
+  );
+  console.log("  --username USER     Set the username to use for Basic auth");
+  console.log(
+    "  --output FILE       Write asset JSON to FILE (default redfish_asset.json)",
+  );
+  console.log("  --depth N           Set maximum crawl depth (default 5)");
+  console.log(
+    "  --timeout N         Set request timeout in ms (default 10000)",
+  );
+  console.log(
+    "  --concurrency N     Set maximum number of concurrent requests (default 5)",
+  );
+  console.log("  --insecure          Disable TLS certificate verification");
+  console.log("  --verbose           Enable verbose output");
+  console.log("  -h, --help          Show this help message");
+}
+
 function parseArgs(argv) {
   const options = { ...DEFAULTS };
   let sawPath = false;
@@ -197,7 +184,6 @@ function parseArgs(argv) {
 }
 
 module.exports = {
-  DEFAULTS,
   parseArgs,
   printUsage,
 };

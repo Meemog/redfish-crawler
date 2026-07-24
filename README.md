@@ -52,6 +52,7 @@ If you prefer not to pass credentials on the command line, you can set the follo
 - `REDFISH_ASSET_PATH`
 - `REDFISH_USERNAME`
 - `REDFISH_PASSWORD`
+- `REDFISH_API_PATH`
 - `REDFISH_OUTPUT`
 - `REDFISH_DEPTH`
 - `REDFISH_TIMEOUT`
