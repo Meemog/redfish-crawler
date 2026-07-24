@@ -28,24 +28,28 @@ function createLimiter(limit, stats) {
   let active = 0;
   const queue = [];
 
-  async function run(fn) {
-    if (active >= limit) {
+  async function acquire() {
+    while (active >= limit) {
       await new Promise((resolve) => queue.push(resolve));
     }
+    active++;
+  }
 
-    active += 1;
+  function release() {
+    active--;
+    queue.shift()?.();
+  }
+
+  async function run(fn) {
+    await acquire();
+
     stats.activeRequests = active;
     stats.maxConcurrent = Math.max(stats.maxConcurrent, active);
 
     try {
       return await fn();
     } finally {
-      active -= 1;
-
-      const next = queue.shift();
-      if (next) {
-        next();
-      }
+      release();
     }
   }
 
@@ -228,11 +232,12 @@ async function parseData(data, crawl, depth, key = "") {
 }
 
 async function crawl(options, path, depth = 0, limit, stats, dispatch) {
-  stats.resourcesDiscovered += 1;
-  stats.maxDepthReached = Math.max(stats.maxDepthReached, depth);
   if (depth > options.maxDepth) {
     return null;
   }
+
+  stats.resourcesDiscovered += 1;
+  stats.maxDepthReached = Math.max(stats.maxDepthReached, depth);
 
   if (!shouldFollow(path)) {
     return null;

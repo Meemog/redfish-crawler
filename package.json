@@ -17,6 +17,7 @@
     "@inquirer/prompts": "^8.5.2",
     "cli-table3": "^0.6.5",
     "dotenv": "^17.4.2",
+    "ora": "^5.4.1",
     "undici": "^7.28.0"
   },
   "devDependencies": {

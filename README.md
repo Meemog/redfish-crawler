@@ -76,16 +76,18 @@ Optional options:
 redfish-crawler submit <FILE> [options]
 ```
 
-Required argument:
+Required arguments:
 
 - `<FILE>` : Path to the JSON file produced by the crawler
+- `--api API_URL` : API endpoint used to submit crawled data
 
 Optional options:
 
-- `--api API` : API endpoint used to submit crawled data
 - `--u-position POSITION` : U position
 - `--notes NOTES` : Submission notes
 - `-h, --help` : Show submit help message
+
+If the U Position and Notes aren't specified, then the system will prompt the user for them before the asset can be created
 
 ## Environment variables
 
@@ -130,5 +132,5 @@ node src/index.js crawl
 Submit a crawled JSON file:
 
 ```sh
-npx redfish-crawler submit redfish_asset.json --api https://api.example.com/submit --u-position 10 --notes "Imported from BMC"
+npx redfish-crawler submit redfish_asset.json --api https://api.example.com --u-position 10 --notes "Imported from BMC"
 ```

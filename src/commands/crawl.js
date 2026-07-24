@@ -1,6 +1,7 @@
 const { parseArgs, printUsage } = require("../args/crawl");
 const { crawlRedfish, writeOutput } = require("../methods/crawler");
 const { confirm, password } = require("@inquirer/prompts");
+const ora = require("ora");
 
 async function passwordPrompt() {
   return await password({
@@ -47,9 +48,7 @@ async function crawl(argv, commandName) {
         "Warning: Insecure TLS is enabled. This may expose you to security risks. Do you want to continue?",
     });
 
-    if (answer) {
-      console.log("Continuing...");
-    } else {
+    if (!answer) {
       console.log("Aborting due to insecure TLS.");
       process.exit(1);
     }
@@ -57,9 +56,14 @@ async function crawl(argv, commandName) {
 
   let asset, stats;
 
+  const spinner = options.verbose ? null : ora("Crawling").start();
+
   try {
     ({ asset, stats } = await crawlRedfish(options));
+
+    spinner?.succeed("Complete!");
   } catch (err) {
+    spinner?.fail("Failed");
     console.error(`Error: ${err.message}`);
     process.exit(1);
   }
@@ -74,6 +78,7 @@ async function crawl(argv, commandName) {
   console.log(`Failed fetches    : ${stats.failed}`);
   console.log(`Skipped           : ${stats.skipped}`);
   console.log(`Max concurrency   : ${stats.maxConcurrent}`);
+  console.log(`Max depth         : ${stats.maxDepthReached}`);
   console.log(`Duration          : ${formatDuration(stats.duration)}`);
 }
 
