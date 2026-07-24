@@ -80,36 +80,39 @@ async function editData(data, { racks, manufacturers }) {
 }
 
 async function getOtherFields(data, { racks, manufacturers }) {
-  if (!data.rackId) {
-    const selectedRack = await selectReferenceField(racks, "Select rack:");
+  const toReturn = {
+    manufacturer: null,
+    rack: null,
+    uPosition: data.uPosition,
+    notes: data.notes,
+  };
 
-    data.rack = selectedRack;
-  }
+  const selectedRack = await selectReferenceField(racks, "Select rack:");
 
-  if (!data.manufacturerId) {
-    const selectedManufacturer = await selectReferenceField(
-      manufacturers,
-      "Select manufacturer:",
-    );
+  toReturn.rack = selectedRack;
 
-    data.manufacturer = selectedManufacturer;
-  }
+  const selectedManufacturer = await selectReferenceField(
+    manufacturers,
+    "Select manufacturer:",
+  );
 
-  if (!data.uPosition) {
-    data.uPosition = await input({
+  toReturn.manufacturer = selectedManufacturer;
+
+  if (!toReturn.uPosition) {
+    toReturn.uPosition = await input({
       message: "Enter U position:",
       default: "0",
     });
   }
 
-  if (!data.notes) {
-    data.notes = await input({
+  if (!toReturn.notes) {
+    toReturn.notes = await input({
       message: "Enter submission notes (optional):",
       default: "",
     });
   }
 
-  return data;
+  return toReturn;
 }
 
 async function submitCommand(argv, commandName) {
@@ -120,10 +123,15 @@ async function submitCommand(argv, commandName) {
 
   let data = await extractData(args.file);
 
-  data = await getOtherFields(data, {
+  const otherFields = await getOtherFields(args, {
     racks,
     manufacturers,
   });
+
+  data = {
+    ...data,
+    ...otherFields,
+  };
 
   showTable(data);
 

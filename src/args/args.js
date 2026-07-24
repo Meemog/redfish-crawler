@@ -42,7 +42,7 @@ function printUsage(commandName) {
   console.log("Commands:");
   console.log("  crawl               Crawl Redfish endpoint (default)");
   console.log(
-    "  submit <FILE> [--api API] Submit crawled data to API endpoint (or set REDFISH_API_PATH in .env)",
+    "  submit <FILE> [--api API_URL] Submit crawled data to a redfish parser API (or set REDFISH_API_PATH in .env)",
   );
   console.log("");
 
@@ -70,7 +70,7 @@ function printUsage(commandName) {
 
   console.log("Submit Options:");
   console.log(
-    "  --api API           Set the API endpoint (or set REDFISH_API_PATH in .env)",
+    "  --api API_URL       Set the API endpoint (or set REDFISH_API_PATH in .env)",
   );
   console.log("  --u-position POSITION Set U position");
   console.log("  --notes NOTES       Add submission notes");

@@ -125,8 +125,8 @@ async function submit(hostname, jsonFile, body) {
   console.log({
     ...body,
     rawJson:
-      str.length > 100
-        ? str.slice(0, 100).replace(/\r?\n/g, "") + "..."
+      str.length > 50
+        ? str.slice(0, 50).replace(/\r?\n/g, "") + "..."
         : str.replace(/\r?\n/g, ""),
   });
 

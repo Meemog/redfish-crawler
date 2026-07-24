@@ -96,7 +96,7 @@ function parseArgs(argv, commandName) {
 }
 
 function printUsage(commandName) {
-  console.log(`Usage: ${commandName} submit <FILE> [--api API] [options]`);
+  console.log(`Usage: ${commandName} submit <FILE> [--api API_URL] [options]`);
   console.log("");
   console.log("Options:");
   console.log(
